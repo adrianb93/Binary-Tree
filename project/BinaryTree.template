@@ -1,0 +1,276 @@
+//
+//  BinaryTree.template
+//  Assignment 3
+//
+//  Created by Adrian Brown
+//  Student c3145942
+//  SENG1120 31 / 10 / 2011
+//
+
+    template <typename value_type>
+    BinaryTree<value_type>::BinaryTree()
+    {
+        root = NULL; // Sever link
+    }
+
+    template <typename value_type>
+    BinaryTree<value_type>::~BinaryTree()
+    {
+        delete root; // Remove object
+        root = NULL; // Sever link
+    }
+
+    template <typename value_type>
+    void BinaryTree<value_type>::insertValue(value_type* new_data)
+    {
+        Node<value_type>* attach_this = new Node<value_type>(new_data); // Node to attach to tree
+        Node<value_type>* pointer = root; // Temp pointer to search through tree
+    
+        if (root == NULL) // List is empty
+        {
+            root = attach_this; // Set as node
+        }
+        else if (binarySearch(new_data, root) == NULL) // Does not exist currently in tree
+        {
+            bool pos_found = false; // Boolean to show if a position is found to place the new data
+            while(pos_found != true) // Looks for a NULL position to place it in
+            {
+                if (new_data < pointer -> getData()) // Data should be to the left
+                {
+                    if (pointer -> getLeft() != NULL)
+                    {
+                        pointer = pointer -> getLeft(); // Set pointer to left
+                    }
+                    else // Left is NULL
+                    {
+                        pointer -> setLeft(attach_this); // Found the position, add node to left
+                        pointer -> getLeft() -> setParent(pointer); // Set current node as left's parent
+                        pos_found = true; // Exit loop
+                    }
+                }
+                else // Data should be to the right
+                {
+                    if (pointer -> getRight() != NULL)
+                    {
+                        pointer = pointer -> getRight(); // Set pointer to right
+                    }
+                    else // Right is NULL
+                    {
+                        pointer -> setRight(attach_this); // Found the position, add node to right
+                        pointer -> getRight() -> setParent(pointer); // Set current node as right's parent
+                        pos_found = true; // Exit loop
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Already exists in tree, no need to add
+        }
+    }
+
+
+    template <typename value_type>
+    void BinaryTree<value_type>::removeNode(Node<value_type>* remove_link)
+    {
+        if (remove_link -> getLeft() == NULL && remove_link -> getRight() == NULL) // End of tree
+        {
+            if (remove_link -> getParent() -> getLeft() == remove_link) // I'm the left child
+            {
+                remove_link -> getParent() -> setLeft(NULL); // Parent sets left as NULL
+            }
+            else // I'm the right child
+            {
+                remove_link -> getParent() -> setRight(NULL); // Parent sets right as NULL
+            }
+            
+            // Memory managment
+            remove_link -> setParent(NULL);
+            remove_link -> setLeft(NULL);
+            remove_link -> setRight(NULL);
+            remove_link = NULL;
+            delete remove_link;
+        }
+        else if (remove_link -> getLeft() == NULL) // Left child is empty
+        {
+            Node<value_type>* pointer; // Temp pointer
+            for (pointer = remove_link -> getRight(); pointer -> getLeft() != NULL; pointer = pointer) // Get lowest left on right branch
+            {
+                pointer = pointer -> getLeft(); // Keep moving left
+            }
+            remove_link -> setData(pointer -> getData()); // Replace data with pointer
+            removeNode(pointer); // Remove pointer the remove_link was replaced with
+        }
+        else // Left child is not empty, put on the right
+        {
+            Node<value_type>* pointer; // Temp pointer
+            for (pointer = remove_link -> getLeft(); pointer -> getRight() != NULL; pointer = pointer)// Get highest right on left branch
+            {
+                pointer = pointer -> getRight(); // Keep moving left
+            }
+            remove_link -> setData(pointer -> getData()); // Replace data with pointer
+            removeNode(pointer); // Remove pointer the remove_link was replaced with
+        }
+    }
+    
+    template <typename value_type>
+    void BinaryTree<value_type>::setRoot(Node<value_type>* new_link)
+    {
+        root = new_link; // Set new root link
+    }
+
+    template <typename value_type>
+    Node<value_type>* BinaryTree<value_type>::getRoot()
+    {
+        return root; // Return root node
+    }
+    
+    template <typename value_type>
+    Node<value_type>* BinaryTree<value_type>::binarySearch(value_type* search_data, Node<value_type>* pointer)
+    {
+        Node<value_type>* return_pointer;
+        if (pointer == NULL) // No results were found
+        {
+            return_pointer = NULL;
+        }
+        else if (pointer -> getData() == search_data) // Data found in tree
+        {
+            return_pointer = pointer; // Return pointer to data
+        }
+        else if (search_data < pointer -> getData()) // Search item must be over to the left
+        {
+            return_pointer = binarySearch(search_data, pointer -> getLeft()); // Search left
+        }
+        else // Search item must be over to the right
+        {
+            return_pointer = binarySearch(search_data, pointer -> getRight()); // Search right
+        }
+        return return_pointer;
+    }
+
+    template <typename value_type>
+    int BinaryTree<value_type>::levelOfNode(Node<value_type>* parent_pointer, Node<value_type>* target_pointer)
+    {
+        int level = 1; // This is one level
+    
+        if (parent_pointer != NULL) // Node is not NULL
+        {
+            if (target_pointer -> getData() < parent_pointer -> getData()) // Target is to left
+            {
+                level += levelOfNode(parent_pointer -> getLeft(), target_pointer); // Query left node
+            }
+            else if (target_pointer -> getData() > parent_pointer -> getData())  // Target is to right
+            {
+                level += levelOfNode(parent_pointer -> getRight(), target_pointer); // Query right node
+            }
+            else // We are on the target node
+            {
+                // Target has been found, do nothing
+            }
+        }
+        else // top_pointer is NULL
+        {
+            cout << "The provided parent node does not exist or the target node does not exist."; // Inform user
+        }
+        
+        if (parent_pointer == getRoot()) // Function designed for root node to be inital parameter. Else binary tree is Level 1,2,3,4
+        {
+            level--; // Binary trees start from 0, Eg) Level 0,1,2,3
+        }
+        return level; 
+    }
+
+    template <typename value_type>
+    int BinaryTree<value_type>::totalComparisons(Node<value_type>* parent_pointer)
+    {
+        int branch = 0; // Branch counter
+        int level = levelOfNode(getRoot(), parent_pointer) + 1; // Level branches go to, not current node level
+        
+        if (parent_pointer != NULL) // Node is not NULL
+        {
+            // Count branches
+            if (parent_pointer -> getLeft() != NULL) // There is a branch to the left
+            {
+                branch++; // There is a branch here
+            }
+            
+            if (parent_pointer -> getRight() != NULL)  // There is a branch to the right
+            {
+                branch++; // There is a branch here
+            }
+            
+            // Total comparisons to these branches
+            branch *= level; // Total branches found times levels to get to these branches
+            
+            // Recursively query childeren
+            if (parent_pointer -> getLeft() != NULL) // There is a branch to the left
+            {
+                branch += totalComparisons(parent_pointer -> getLeft()); // Query left node
+            }
+            
+            if (parent_pointer -> getRight() != NULL)  // There is a branch to the right
+            {
+                branch += totalComparisons(parent_pointer -> getRight()); // Query right node
+            }
+        }
+        else // parent_pointer is NULL
+        {
+            cout << "The provided parent node does not exist."; // Inform user
+        }
+        
+        return branch;
+    }
+
+    template <typename value_type>
+    int BinaryTree<value_type>::treeSize(Node<value_type>* parent_pointer)
+    {
+        int count = 1; // There is a node here
+        
+        if (parent_pointer != NULL) // Pointer is not NULL
+        {
+            count += treeSize(parent_pointer -> getLeft()); // To left node
+            count += treeSize(parent_pointer -> getRight()); // To right node
+        }
+        else // Pointer is NULL
+        {
+            count = 0; // Provided node is NULL, there is no node here
+        }
+        return count;
+    }
+
+    template <typename valueType>
+    string BinaryTree<valueType>::toString()
+    {
+        return toString(root, 0); // Call toString function with these parameters
+    }
+
+    template <typename valueType>
+    string BinaryTree<valueType>::toString(Node<valueType>* parent_pointer, int level)
+    {
+        string output_this = ""; // Declare empty string
+        if (parent_pointer != NULL) // Provided pointer is not null
+        {
+            // Right
+            output_this += toString (parent_pointer -> getRight(), level + 1); 
+        
+            // Indent levels
+            for (int i = 0; i < level; ++i)
+            {
+                if (i == level - 1)
+                {
+                    output_this = output_this + " I----------> ";
+                }
+                else
+                {
+                    output_this = output_this + " I            ";
+                }
+            }
+        
+            // Current node
+            output_this += parent_pointer -> getData() -> toString() + "\n";
+        
+            // Left
+            output_this += toString(parent_pointer -> getLeft(), level + 1);
+        }
+        return output_this;
+    }

@@ -1,0 +1,76 @@
+//
+//  Node.template
+//  Assignment 3
+//
+//  Created by Adrian Brown
+//  Student c3145942
+//  SENG1120 31 / 10 / 2011
+//
+
+    template <typename value_type>
+    Node<value_type>::Node(value_type* initial_data, Node<value_type>* parent_node)
+    {
+        data = initial_data; // Sets data as the provided parameter or it's default
+        parent = parent_node; // Sets the link as the provided parameter or it's default
+    }
+    
+    template <typename value_type>
+    Node<value_type>::~Node()
+    {
+        delete left; // Calls this same destructor in the node to be deleted
+        delete right; // Calls this same destructor in the node to be deleted
+        delete data; // Calls deconstructor of the data item
+        parent = NULL; // Remove pointer address
+        left = NULL; // Remove pointer address
+        right = NULL; // Remove pointer address
+        data = NULL; // Remove pointer address
+    }
+    
+    template <typename value_type>
+    void Node<value_type>::setData(value_type* new_data)
+    {
+        data = new_data; // Sets the data stored in this node
+    }
+
+
+    template <typename value_type>
+    void Node<value_type>::setParent(Node<value_type>* new_link)
+    {
+        parent = new_link; // Sets a pointer to the parent
+    }
+    
+    template <typename value_type>
+    void Node<value_type>::setLeft(Node<value_type>* new_link)
+    {
+        left = new_link; // Sets a pointer to the next node it is to be linked to
+    }
+
+    template <typename value_type>
+    void Node<value_type>::setRight(Node<value_type>* new_link)
+    {
+        right = new_link; // Sets a pointer to the next node it is to be linked to
+    }
+    
+    template <typename value_type>
+    value_type* Node<value_type>::getData() const
+    {
+        return data; // Returns the data stored in this node
+    }
+
+    template <typename value_type>
+    Node<value_type>* Node<value_type>::getParent() const
+    {
+        return parent; // Returns the pointer to the parent node
+    }
+    
+    template <typename value_type>
+    Node<value_type>* Node<value_type>::getLeft() const
+    {
+        return left; // Returns the pointer to the left node
+    }
+
+    template <typename value_type>
+    Node<value_type>* Node<value_type>::getRight() const
+    {
+        return right; // Returns the pointer to the right node
+    }
